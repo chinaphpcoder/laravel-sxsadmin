@@ -21,11 +21,35 @@ class CampaignController extends BaseController
             $type = $request->input('type');
             $authid = $request->input('authid');
             $data =  $request->input('data');
-
+            //$data = urldecode($data);
+            //exit($data);
+            if ( $authid == null )
+            {
+                exit('authid 不能为空');
+            }
+            $datajson = json_decode($data,true);
+            if( $datajson != null )
+            {
+                $isjson = true;
+                $data = $datajson['Key'];
+            }
+            if ( $data == null )
+            {
+                exit('加密数据 不能为空');
+            }
             $sql = "select user_id,phone,register_time,dq_id,invest_time,invest_money,isback,backtime from vault_user_campaign;";
-
-            $rows = DB::connection('mysql_main')->select($sql);
-
+            if ($server == 1)
+            {
+                $rows = DB::connection('mysql_230')->select($sql);
+            } elseif ($server == 2)
+            {
+                $rows = DB::connection('mysql_main')->select($sql);
+            } elseif ($server == 3)
+            {
+                $rows = DB::connection('mysql_pre')->select($sql);
+            } else {
+                exit('服务器选择错误');
+            }
             //echo $sql;
             if( count($rows) != 1 )
             {

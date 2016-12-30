@@ -33,3 +33,15 @@ Route::post('/server/appdebug', 'ServerController@appdebug')->name('server_appde
 Route::post('/server/userinfo', 'UserController@userinfo')->name('server_userinfo');
 
 
+
+Auth::routes();
+
+Route::get('/home', 'HomeController@index');
+
+Auth::routes();
+
+Route::get('/home', 'HomeController@index');
+
+Auth::routes();
+
+Route::get('/home', 'HomeController@index');
