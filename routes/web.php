@@ -37,11 +37,3 @@ Route::post('/server/userinfo', 'UserController@userinfo')->name('server_userinf
 Auth::routes();
 
 Route::get('/home', 'HomeController@index');
-
-Auth::routes();
-
-Route::get('/home', 'HomeController@index');
-
-Auth::routes();
-
-Route::get('/home', 'HomeController@index');
