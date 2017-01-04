@@ -11,10 +11,11 @@ use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use App\Libraries\Classes\TransferCode;
 use App\Libraries\Classes\HttpClient;
 
+
 class UserController extends BaseController
 {
     use AuthorizesRequests, DispatchesJobs, ValidatesRequests;
-    function userinfo(Request $request){
+    function userinfo(Request $request){ 
         try{
             $server = $request->input('server');
             $where = 'where 1 ';

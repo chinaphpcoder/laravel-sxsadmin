@@ -13,20 +13,23 @@
 
 Route::get('/', function () {
     return view('welcome');
-});
+})->middleware('auth');
 
 Route::get('/appcode', ['as' => 'url_appcode',function () {
     return view('appcode');
-}]);
+}])->middleware('auth');
+
 Route::get('/appdebug', ['as' => 'url_appcode',function () {
     return view('appdebug');
-}]);
+}])->middleware('auth');
+
 Route::any('/campaign', ['as' => 'url_campaign',function () {
     return view('campaign');
-}]);
+}])->middleware('auth');
+
 Route::any('/userinfo', ['as' => 'url_userinfo',function () {
     return view('userinfo');
-}]);
+}])->middleware('auth');
 Route::post('/server/appdecode', 'ServerController@decode')->name('server_appdecode');
 Route::post('/server/appencode', 'ServerController@encode')->name('server_appencode');
 Route::post('/server/appdebug', 'ServerController@appdebug')->name('server_appdebug');
