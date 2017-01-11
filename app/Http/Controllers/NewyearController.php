@@ -12,9 +12,219 @@ use App\Libraries\Classes\TransferCode;
 use App\Libraries\Classes\HttpClient;
 
 
-class UserController extends BaseController
+class NewyearController extends BaseController
 {
     use AuthorizesRequests, DispatchesJobs, ValidatesRequests;
+    public function index(Request $request) {
+        try{
+            $date = $request->input('date');
+            $date = trim($date);
+            $status = valid_date($date);
+            if($status == false ) {
+                $time = time();
+                $date = date("Y-m-d",$time);
+            }
+
+            if( $date < '2017-01-10' ) {
+                $date = '2017-01-10';
+            }
+
+            if( $date > '2017-02-12' ) {
+                $date = '2017-02-12';
+            }
+            $dates = array();
+            for( $i = strtotime('2017-01-10 00:00:00') ;$i <= strtotime('2017-02-12 0:00:01');$i = $i + 3600*24 ) {
+                $dates[] = date("Y-m-d",$i);
+            }
+
+            $time = strtotime($date." 00:00:01");
+
+            $time_start = date("Y-m-d 00:00:00",$time);
+            $time_end = date("Y-m-d 23:59:59",$time);
+            $db = DB::connection('mysql_main');
+            $datas = array();
+            do {
+                $sql = "select * from `vault_user_rummage_log` where create_time >= '{$time_start}' and create_time <= '{$time_end}' ";
+                $rows = $db->select($sql);
+                if( count($rows) <= 0 )
+                {
+                    continue;
+                }
+                $count = 0;
+                $rule_ids = array();
+                $user_ids = array();
+                foreach ($rows as $key => $value) {
+                    $datas[$count]['user_id'] = $value['user_id'];
+                    $datas[$count]['num'] = $value['num'];
+                    $datas[$count]['position'] = $value['position'];
+                    $datas[$count]['rule_id'] = $value['rule_id'];
+                    $datas[$count]['state'] = $value['state'];
+                    $datas[$count]['time'] = $value['create_time'];
+                    $rule_ids[] = $value['rule_id'];
+                    $user_ids[] = $value['user_id'];
+                    $count++;
+                }
+                $rule_ids = array_unique($rule_ids);
+                $rule_ids = implode(",",$rule_ids);
+                $user_ids = array_unique($user_ids);
+                $user_ids = implode(",",$user_ids);
+                $sql = "select * from `vault_prize_rule` where id in ( {$rule_ids} )";
+                $rows = $db->select($sql);
+                $rules = array();
+                $prize_ids = array();
+                foreach ($rows as $key => $value) {
+                    $rules[$value['id']]['rule'] = $value['rule'];
+                    $rules[$value['id']]['prize_id'] = $value['prize_id'];
+                    $prize_ids[] = $value['prize_id'] ;
+                    # code...
+                }
+                $sql = "select * from `vault_user` where id in ( {$user_ids} )";
+                $rows = $db->select($sql);
+                $users = array();
+                foreach ($rows as $key => $value) {
+                    $users[$value['id']]['real_name'] = $value['real_name'];
+                    $users[$value['id']]['mobile'] = $value['moblie'];
+                    # code...
+                }
+
+                $prize_ids = array_unique($prize_ids);
+                $prize_ids = implode(",",$prize_ids);
+                $sql = "select * from vault_prize where id in ( {$prize_ids} )" ;
+                $rows = $db->select($sql);
+                $prizes = array();
+                foreach ($rows as $key => $value) {
+                    $prizes[$value['id']]['prize_name'] = $value['prize_name'];
+                }
+                foreach ($datas as $key => $value) {
+                    $datas[$key]['real_name'] = $users[$value['user_id']]['real_name'];
+                    $datas[$key]['mobile'] = $users[$value['user_id']]['mobile'];
+                    $datas[$key]['prize_name'] = $prizes[$rules[$value['rule_id']]['prize_id']]['prize_name'];
+                    $datas[$key]['rule'] = $rules[$value['rule_id']]['rule'];
+                    if( $datas[$key]['state'] == 0 ) {
+                        $datas[$key]['state'] = '否';
+                    } elseif( $datas[$key]['state'] == 1 ) {
+                        $datas[$key]['state'] = '是';
+                    }
+                }
+
+            }while (0) ;
+
+            //邀请
+            $allv = array();
+            $invs = array();
+            do {
+                $sql = "select * from `vault_user` where friend_id != 0 and creat_time >= '{$time_start}' and creat_time <= '{$time_end}' ";
+                $rows = $db->select($sql);
+                if( count($rows) <= 0 )
+                {
+                    continue;
+                }
+                $count = 0;
+                $friend_ids = array();
+                $user_ids = array();
+                foreach ($rows as $key => $value) {
+                    $invs[$count]['user_id'] = $value['id'];
+                    $invs[$count]['real_name'] = $value['real_name'];
+                    $invs[$count]['time'] = $value['creat_time'];
+                    $invs[$count]['friend_id'] = $value['friend_id'];
+                    $invs[$count]['mobile'] = $value['moblie'];
+                    if($value['friend_id'] != 0 ) {
+                        $friend_ids[] = $value['friend_id'];
+                    }
+                    $user_ids[] = $value['id'];
+                    $count++;
+                }
+
+
+                $user_ids = array_unique($user_ids);
+                $user_ids = implode(",",$user_ids);
+                $friend_ids = array_unique($friend_ids);
+                $friend_ids = implode(",",$friend_ids);
+                $sql = "select * from vault_user_dq_log where user_id in ( {$user_ids} )";
+                $rows = $db->select($sql);
+                $invests = array();
+                $inv_ids = array();
+                foreach ($rows as $key => $value) {
+                    $invests[$value['user_id']][$value['id']]['in_time'] = $value['in_time'];
+                    $invests[$value['user_id']][$value['id']]['deal_term'] = $value['deal_term'];
+                    $invests[$value['user_id']][$value['id']]['in_money'] = $value['in_money'];
+                    $inv_ids[] = $value['id'];
+                    # code...
+                }
+                //var_dump($inv_ids);
+                $inv_ids = array_unique($inv_ids);
+                $inv_ids = implode(",",$inv_ids);
+                $sql = "select * from vault_inv_money_log where id in ( {$inv_ids} ) and fanli_type=2 and type=2 ";
+                //echo $sql;
+                $rows = $db->select($sql);
+                $fanlis = array();
+                foreach ($rows as $key => $value) {
+                    $fanlis[$value['id']]['reward_money'] = $fanlis['reward_money'];
+                    # code...
+                }
+
+                $sql = "select * from `vault_user` where id in ( {$friend_ids} )";
+                $rows = $db->select($sql);
+                $users = array();
+                foreach ($rows as $key => $value) {
+                    $users[$value['id']]['real_name'] = $value['real_name'];
+                    $users[$value['id']]['mobile'] = $value['moblie'];
+                    # code...
+                }
+                // var_dump($users);
+                
+                $count=0;
+
+                foreach ($invs as $keys => $values) {
+                    //echo $values['user_id'];
+                }
+
+                foreach ($invs as $keys => $values) {
+                    $invest = @$invests[$values['user_id']] ;
+
+                    if( @$invest == null ) {
+                        $allv[$count]['real_name'] = $values['real_name'];
+                        $allv[$count]['mobile'] = $values['mobile'];
+                        $allv[$count]['time'] = $values['time'];
+                        $allv[$count]['inv_real_name'] = $users[$values['friend_id']]['real_name'];
+                        $allv[$count]['inv_mobile'] = $users[$values['friend_id']]['mobile'];
+                        $allv[$count]['in_time'] = '';
+                        $allv[$count]['in_money'] = '';
+                        $allv[$count]['deal_term'] = '';
+                        $allv[$count]['money'] = '';
+                        $count++;
+                    } else {
+                        foreach ($invests[$values['user_id']] as $key => $value) {
+                            $allv[$count]['real_name'] = $values['real_name'];
+                            $allv[$count]['mobile'] = $values['mobile'];
+                            $allv[$count]['time'] = $values['time'];
+                            $allv[$count]['inv_real_name'] = $users[$values['friend_id']]['real_name'];
+                            $allv[$count]['inv_mobile'] = $users[$values['friend_id']]['mobile'];
+                            $allv[$count]['in_time'] = $value['in_time'];
+                            $allv[$count]['in_money'] = $value['in_money'];
+                            $allv[$count]['deal_term'] = $value['deal_term'];
+                            $allv[$count]['money'] = @$fanlis[$key];
+                            $count++;
+                            # code...
+                        }
+
+                    }
+                    //$invs[$key]['inv_real_name'] = $users[$value['friend_id']]['real_name'];
+                    //$invs[$key]['inv_mobile'] = $users[$value['friend_id']]['mobile'];
+                }
+
+            }while (0) ;
+            
+
+        } catch(Exception $e) {
+            echo $e->getMessage();
+
+        } finally {
+            //var_dump($allv);
+            return view('newyear', compact('dates','date','datas','allv'));
+        }
+        
+    }
     function userinfo(Request $request){ 
         try{
             $server = $request->input('server');
