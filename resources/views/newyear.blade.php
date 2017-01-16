@@ -6,7 +6,7 @@
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <meta name="csrf-token" content="{{ csrf_token() }}">
 
-        <title>沙小僧API加密解密工具</title>
+        <title>沙小僧-春节活动数据</title>
         <!-- Latest compiled and minified CSS -->
         <link href="//cdn.bootcss.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet">
 
@@ -50,14 +50,24 @@
                                     <thead>
                                         <tr>
                                         <th>翻牌时间</th>
+                                        <th>姓名</th>
+                                        <th>手机号</th>
                                         <th>奖品名称</th>
                                         <th>用户第几次中奖</th>
                                         <th>目前第几次</th>
                                         <th>是否中奖</th>
                                         </tr>
                                         @foreach ($datas as $value)
-                                            <tr >
+                                            @if ($value['state'] == '是')
+                                                <?php $class = 'class=success'; ?>
+                                            @else
+                                                <?php $class = ''; ?>
+                                            @endif
+
+                                            <tr {{$class}}>
                                             <td>{{$value['time']}}</td>
+                                            <td>{{$value['real_name']}}</td>
+                                            <td>{{$value['mobile']}}</td>
                                             <td>{{$value['prize_name']}}</td>
                                             <td>{{$value['rule']}}</td>
                                             <td>{{$value['num']}}</td>
