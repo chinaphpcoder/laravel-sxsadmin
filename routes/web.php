@@ -27,6 +27,10 @@ Route::any('/campaign', ['as' => 'url_campaign',function () {
     return view('campaign');
 }])->middleware('auth');
 
+Route::get('/ofo', ['as' => 'url_ofo',function () {
+    return view('ofo');
+}]);
+
 Route::any('/userinfo', ['as' => 'url_userinfo',function () {
     return view('userinfo');
 }])->middleware('auth');
@@ -35,6 +39,8 @@ Route::post('/server/appdecode', 'ServerController@decode')->name('server_appdec
 Route::post('/server/appencode', 'ServerController@encode')->name('server_appencode');
 Route::post('/server/appdebug', 'ServerController@appdebug')->name('server_appdebug');
 Route::post('/server/userinfo', 'UserController@userinfo')->name('server_userinfo');
+Route::post('/server/ofogetpwd', 'OfoController@getpwd')->name('server_ofogetpwd');
+Route::post('/server/ofosetpwd', 'OfoController@setpwd')->name('server_ofosetpwd');
 
 
 

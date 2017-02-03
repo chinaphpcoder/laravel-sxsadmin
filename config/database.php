@@ -117,6 +117,20 @@ return [
             'strict' => true,
             'engine' => null,
         ],
+
+        'mysql_ofo' => [
+            'driver' => 'mysql',
+            'host' => '127.0.0.1',
+            'port' =>  '9309',
+            'database' => 'xxx_laravel',
+            'username' => 'root',
+            'password' => 'sxstest2016',
+            'charset' => 'utf8',
+            'collation' => 'utf8_unicode_ci',
+            'prefix' => '',
+            'strict' => true,
+            'engine' => null,
+        ],
         
 
 
